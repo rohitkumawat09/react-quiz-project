@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import './App.css';
 import image1 from './img/image.png';
@@ -10,6 +9,8 @@ function App() {
   const [showSection, setShowSection] = useState(null);
   const [message, setMessage] = useState("");
   const [messageType, setMessageType] = useState("");
+  const [step, setStep] = useState(0);
+  const [selectedTopic, setSelectedTopic] = useState("");
 
   function handleCreateUser() {
     if (name.trim()) {
@@ -17,6 +18,7 @@ function App() {
       setMessage("User Created Successfully!");
       setMessageType("success");
       setShowSection(null);
+// setStep(2);
     } else {
       setMessage("Please Enter a Name to Create User");
       setMessageType("error");
@@ -28,10 +30,12 @@ function App() {
     }, 2000);
   }
 
+ 
+
   function startQuiz() {
     if (createdUser) {
       setMessage("");
-      setShowSection("quiz");
+      //  setStep(2);
     } else {
       setMessage("Please Create a User First");
       setMessageType("error");
@@ -41,6 +45,24 @@ function App() {
       }, 2000);
     }
   }
+  
+
+  function handleTopicSelect(topic) {
+    setSelectedTopic(topic);
+  }
+  function beginQuiz() {
+    if (selectedTopic) {
+      //  setStep(3);
+    } else {
+      setMessage("Please select a topic first.");
+      setMessageType("error");
+      setTimeout(() => {
+        setMessage("");
+        setMessageType("");
+      }, 2000);
+    }
+  }
+    
 
   return (
     <>
@@ -93,16 +115,51 @@ function App() {
           </div>
         )}
 
-        {showSection === "quiz" && createdUser && (
-          <div className="output">
+       
+
+
+{step === 1 && (
+
+  
+          <div className="topic-selection">
+
+<div className='header'>
+        <div className='pop'>
+          <h1>Quiz</h1>
+        </div>
+        
+        <div className="home_quix_score">
+                <h4>Home</h4>
+                <h4>Quiz</h4>
+                <h4>Score</h4>
+              </div>
+          <div className='start'>
+          {!createdUser ? (
+            <button onClick={() => setShowSection("form")}>Create User</button>
+          ) : (
+            <button onClick={() => setShowSection("form")}>{createdUser}</button>
+          )}
+        </div>
+       
+      </div>
             <h1>Welcome, {createdUser}!</h1>
             <p className="choose-category">Select a Quiz Category:</p>
-    <div className="categories">
-      <div className="category">Farming</div>
-      <div className="category">Sport</div>
-      <div className="category">Movie</div>
-      <div className="category">History</div>
-    </div>
+            <div className="categories">
+              <div className={`category ${selectedTopic === "Farming" ? "selected" : ""}`} onClick={() => handleTopicSelect("Farming")}>Farming</div>
+              <div className={`category ${selectedTopic === "Sport" ? "selected" : ""}`} onClick={() => handleTopicSelect("Sport")}>Sport</div>
+              <div className={`category ${selectedTopic === "Movie" ? "selected" : ""}`} onClick={() => handleTopicSelect("Movie")}>Movie</div>
+              <div className={`category ${selectedTopic === "History" ? "selected" : ""}`} onClick={() => handleTopicSelect("History")}>History</div>
+            </div>
+            <button className="Start-btn" onClick={beginQuiz}>Start</button>
+          </div>
+        )}
+
+      
+        {step === 3 && selectedTopic && (
+          <div className="quiz-page">
+            <h2>{selectedTopic} Quiz</h2>
+            <p>Q1: Sample Question for {selectedTopic}</p>
+            
           </div>
         )}
 
@@ -122,5 +179,4 @@ function App() {
     </>
   );
 }
-
 export default App;
