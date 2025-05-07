@@ -149,8 +149,22 @@ function App() {
     console.log("Current Score:", score);
     handleNextQuestion();
   }
+
+  function handleNextQuestion() {
+    clearInterval(timerRef.current); 
+  
+    if (questionNumber < questions.length - 1) {
+      setQuestionNumber((prev) => prev + 1);
+    } else {
+      setMessage("Quiz Completed!");
+      setMessageType("success");
+      setStep(3); 
+    }
+  }
+  
   return (
     <>
+  
       <div className="header">
         <div className="pop">
           <h1>Quiz</h1>
@@ -277,12 +291,19 @@ function App() {
                       {option}
                     </p>
                   ))}
+                           <div className="next">
+  <button onClick={handleNextQuestion}>Next</button>
+</div>
                 </div>
                 <div className="countdown">
                   Time Remaining: {countdown} seconds
+                  
                 </div>
+                
               </>
+              
             )}
+    
           </div>
         )}
 
