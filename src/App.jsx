@@ -23,6 +23,17 @@ function App() {
   const [questionNumber, setQuestionNumber] = useState(0);
   const [countdown, setCountdown] = useState(5);
   const timerRef = useRef(null);
+  const [score, setScore] = useState(0);
+
+
+
+
+  useEffect(() => {
+    if (selectedTopic) {
+      const temp = quiz.find((obj) => obj.category === selectedTopic);
+      setQuestions(temp.questions);
+    }
+  }, [selectedTopic]);
 
   useEffect(() => {
     if (selectedTopic) {
@@ -38,7 +49,7 @@ function App() {
         setCountdown((prev) => {
           if (prev === 1) {
             clearInterval(timerRef.current);
-            handleNextQuestion();
+            handleNextQuestion(); 
           }
           return prev - 1;
         });
@@ -52,6 +63,18 @@ function App() {
 
   function handleCreateUser() {
     if (name.trim()) {
+      const existingScores = JSON.parse(localStorage.getItem("quizScores")) || [];
+
+      const newEntry = {
+        id: Date.now(),
+        name: name,
+        score: 0,
+        category: 0,
+  
+    };
+    const updatedScores = [...existingScores, newEntry];
+        localStorage.setItem("quizScores", JSON.stringify(updatedScores));
+    
       setCreatedUser(name);
       setMessage("User Created Successfully!");
       setMessageType("success");
@@ -100,15 +123,32 @@ function App() {
   }
 
   function handleNextQuestion() {
+  
     if (questionNumber < questions.length - 1) {
       setQuestionNumber((prev) => prev + 1);
+
     } else {
+      
       setMessage("Quiz Completed!");
       setMessageType("success");
-      setStep(0); // Reset to the initial step
+      // setStep(0); // Reset to the initial step
+      setStep(3); // Reset to the initial step
+
     }
   }
 
+
+  
+
+
+  function handleAnswer(selectedAnswer) {
+    const currentQuestion = questions[questionNumber];
+    if (selectedAnswer === currentQuestion.a) {
+      setScore((prevScore) => prevScore + 1);
+    }
+    console.log("Current Score:", score);
+    handleNextQuestion();
+  }
   return (
     <>
       <div className="header">
@@ -200,6 +240,7 @@ function App() {
         )}
 
         {step === 1 && (
+          
           <div className="topic-selection">
             <h1>Welcome, {createdUser}!</h1>
             <p className="choose-category">Select a Quiz Category:</p>
@@ -219,6 +260,7 @@ function App() {
             <button className="Start-btn" onClick={beginQuiz}>
               Start
             </button>
+            
           </div>
         )}
 
@@ -231,7 +273,7 @@ function App() {
                 <h2>{questions[questionNumber].q}</h2>
                 <div className="options">
                   {questions[questionNumber].options.map((option, index) => (
-                    <p className="option" key={index}>
+                    <p className="option" key={index} onClick={() => handleAnswer(option)}>
                       {option}
                     </p>
                   ))}
@@ -243,6 +285,29 @@ function App() {
             )}
           </div>
         )}
+
+
+
+{step === 3 && (
+  <div className="score-screen">
+    <h1>Quiz Completed!</h1>
+    <h2>Well done, {createdUser}!</h2>
+    <h2>Your Score: {score} </h2>
+    <h2> questions{questions.length}</h2>
+    <button onClick={() => {
+      setStep(0);
+      setScore(0);
+      setCreatedUser("");
+      setName("");
+      setQuestionNumber(0);
+      setSelectedTopic("");
+      setQuestions(null);
+      setCountdown(5);
+      setShowSection(null);
+    }}>Play Again</button>
+  </div>
+)}
+
       </div>
     </>
   );
