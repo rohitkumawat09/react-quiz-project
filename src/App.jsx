@@ -1,8 +1,15 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import "./App.css";
 import image1 from "./img/image.png";
 import { FaAnglesRight } from "react-icons/fa6";
 import { quiz } from "./questions.js";
+
+const categories = [
+  { id: 1, name: "Movies" },
+  { id: 2, name: "Farming" },
+  { id: 3, name: "Culture" },
+  { id: 4, name: "History" },
+];
 
 function App() {
   const [name, setName] = useState("");
@@ -12,21 +19,36 @@ function App() {
   const [messageType, setMessageType] = useState("");
   const [step, setStep] = useState(0);
   const [selectedTopic, setSelectedTopic] = useState("");
-  const [categories, setCategories] = useState([
-    { id: 1, name: "Movies" },
-    { id: 2, name: "Farming" },
-    { id: 3, name: "Culture" },
-    { id: 4, name: "History" },
-  ]);
   const [questions, setQuestions] = useState(null);
+  const [questionNumber, setQuestionNumber] = useState(0);
+  const [countdown, setCountdown] = useState(5);
+  const timerRef = useRef(null);
 
   useEffect(() => {
     if (selectedTopic) {
-      console.log("pappu paas ho gya");
       const temp = quiz.find((obj) => obj.category === selectedTopic);
       setQuestions(temp.questions);
     }
   }, [selectedTopic]);
+
+  useEffect(() => {
+    if (step === 2 && questions) {
+      setCountdown(5); // Reset countdown when a new question is displayed
+      timerRef.current = setInterval(() => {
+        setCountdown((prev) => {
+          if (prev === 1) {
+            clearInterval(timerRef.current);
+            handleNextQuestion();
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    }
+
+    return () => clearInterval(timerRef.current); // Cleanup timer on unmount or step change
+  }, [step, questionNumber, questions]);
+
+  console.log("questionNumber", questionNumber);
 
   function handleCreateUser() {
     if (name.trim()) {
@@ -74,6 +96,16 @@ function App() {
         setMessage("");
         setMessageType("");
       }, 2000);
+    }
+  }
+
+  function handleNextQuestion() {
+    if (questionNumber < questions.length - 1) {
+      setQuestionNumber((prev) => prev + 1);
+    } else {
+      setMessage("Quiz Completed!");
+      setMessageType("success");
+      setStep(0); // Reset to the initial step
     }
   }
 
@@ -183,39 +215,6 @@ function App() {
                   </div>
                 );
               })}
-
-              {/* <div
-                className={`category ${
-                  selectedTopic === "Farming" ? "selected" : ""
-                }`}
-                onClick={() => handleTopicSelect("Farming")}
-              >
-                Farming
-              </div>
-              <div
-                className={`category ${
-                  selectedTopic === "Sport" ? "selected" : ""
-                }`}
-                onClick={() => handleTopicSelect("Sport")}
-              >
-                Sport
-              </div>
-              <div
-                className={`category ${
-                  selectedTopic === "Movie" ? "selected" : ""
-                }`}
-                onClick={() => handleTopicSelect("Movie")}
-              >
-                Movie
-              </div>
-              <div
-                className={`category ${
-                  selectedTopic === "History" ? "selected" : ""
-                }`}
-                onClick={() => handleTopicSelect("History")}
-              >
-                History
-              </div> */}
             </div>
             <button className="Start-btn" onClick={beginQuiz}>
               Start
@@ -226,22 +225,22 @@ function App() {
         {step === 2 && selectedTopic && (
           <div className="quiz-page">
             <h2>{selectedTopic} Quiz</h2>
-            <p>Q1: Sample Question for {selectedTopic}</p>
-            {questions &&
-              questions.map((obj) => {
-                return (
-                  <>
-                    <h2>{obj.q}</h2>
-                    <div className="options">
-                      {obj.options.map((option, index) => (
-                        <p className="option" key={index}>
-                          {option}
-                        </p>
-                      ))}
-                    </div>
-                  </>
-                );
-              })}
+
+            {questions && (
+              <>
+                <h2>{questions[questionNumber].q}</h2>
+                <div className="options">
+                  {questions[questionNumber].options.map((option, index) => (
+                    <p className="option" key={index}>
+                      {option}
+                    </p>
+                  ))}
+                </div>
+                <div className="countdown">
+                  Time Remaining: {countdown} seconds
+                </div>
+              </>
+            )}
           </div>
         )}
       </div>
