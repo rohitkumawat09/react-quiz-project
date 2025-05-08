@@ -61,7 +61,7 @@ function App() {
 
   useEffect(() => {
     if (step === 2 && questions) {
-      setCountdown(5); // Reset countdown when a new question is displayed
+      setCountdown(5); 
       timerRef.current = setInterval(() => {
         setCountdown((prev) => {
           if (prev === 1) {
@@ -80,18 +80,15 @@ function App() {
 
   function handleCreateUser() {
     if (name.trim()) {
-      // const existingScores = JSON.parse(localStorage.getItem("quizScores")) || [];
-
-      //   const newEntry = {
-      //     id: Date.now(),
-      //     name: name,
-      //     score: 0,
-      //     category: 0,
-
-      // };
-      // const updatedScores = [...existingScores, newEntry];
-      //     localStorage.setItem("quizScores", JSON.stringify(updatedScores));
-
+      const isUpdate = createdUser && createdUser !== name;
+     
+      if (isUpdate) {
+        setMessage("User Updated Successfully!");
+      } else {
+        setMessage("User Created Successfully!");
+      }
+      
+    
       setCreatedUser(name);
       setMessage("User Created Successfully!");
       setMessageType("success");
@@ -101,17 +98,20 @@ function App() {
       setMessageType("error");
     }
 
+
+  
+  
+
     setTimeout(() => {
       setMessage("");
       setMessageType("");
-    }, 2000);
+    }, 4000);
   }
 
   function startQuiz() {
     if (createdUser) {
       setMessage("");
       setStep(1);
-      //  setStep(2);
     } else {
       setMessage("Please Create a User First");
       setMessageType("error");
@@ -123,34 +123,38 @@ function App() {
     }
   }
 
+
+
   function handleTopicSelect(topic) {
     setSelectedTopic(topic);
     setMessage("Topic selected successfully!");
     setMessageType("success");
     setQuestionNumber(0);
     setScore(0);
-
+    setStep(2); 
+  
     setTimeout(() => {
       setMessage("");
       setMessageType("");
-    }, 3000);
+    }, 2000);
   }
-  function beginQuiz() {
-    if (selectedTopic) {
+  
+  // function beginQuiz() {
+  //   if (selectedTopic) {
 
-      setStep(2); 
-      setQuestionNumber(0);
-      setScore(0);
+  //     setStep(2); 
+  //     setQuestionNumber(0);
+  //     setScore(0);
 
-    } else {
-      setMessage("Please select a topic first.");
-      setMessageType("error");
-      setTimeout(() => {
-        setMessage("");
-        setMessageType("");
-      }, 2000);
-    }
-  }
+  //   } else {
+  //     setMessage("Please select a topic first.");
+  //     setMessageType("error");
+  //     setTimeout(() => {
+  //       setMessage("");
+  //       setMessageType("");
+  //     }, 2000);
+  //   }
+  // }
 
   function handleNextQuestion() {
     clearInterval(timerRef.current);
@@ -167,18 +171,23 @@ function App() {
         score: score,
         totalQuestions: questions.length,
         category: selectedTopic,
-        date: new Date().toLocaleDateString(),
+        // date: new Date().toLocaleDateString(),
+        date: new Date().toLocaleDateString("en-GB", {
+          day: "numeric",
+          month: "numeric",
+          year: "numeric",
+        }).replace(/\//g, ","),
         time: new Date().toLocaleTimeString(),
       };
 
       localStorage.setItem("quizScores", JSON.stringify([...existingScores, newEntry]));
 
-      setMessage("Quiz Completed!");
+      // setMessage("Quiz Completed!");
       setMessageType("success");
       // setStep(0); // Reset to the initial step
       // setStep(3); // Reset to the initial step
       setTimeout(() => {
-        setMessage("");
+        // setMessage("");
         setMessageType("");
         setStep(3);
       }, 2000);
@@ -212,8 +221,8 @@ function App() {
           <div className="home_quix_score">
 
             <button onClick={() => {
-  setCreatedUser("");
-  setName("");
+  // setCreatedUser("");
+  // setName("");
   setStep(0);
   setSelectedTopic("");
   setQuestions(null);
@@ -342,9 +351,9 @@ function App() {
                 );
               })}
             </div>
-            <button className="Start-btn" onClick={beginQuiz}>
+            {/* <button className="Start-btn" onClick={beginQuiz}>
               Start
-            </button>
+            </button> */}
 
           </div>
         )}
@@ -360,12 +369,7 @@ function App() {
                   {questions[questionNumber].options.map((option, index) => (
                     <p className="option" key={index} onClick={() => handleAnswer(option)}>
                       {option}
-                      {/* {option === questions[questionNumber].a && (
-                        <span className="correct-answer"> (Correct)</span>
-                      )}
-                      {option !== questions[questionNumber].a && (
-                        <span className="wrong-answer"> (Wrong)</span>
-                      )} */}
+                 
                     </p>
                   ))}
                   <div className="next">
