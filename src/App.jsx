@@ -24,7 +24,29 @@ function App() {
   const [countdown, setCountdown] = useState(5);
   const timerRef = useRef(null);
   const [score, setScore] = useState(0);
+  const [currentTime, setCurrentTime] = useState(new Date());
+  const [scoreList, setScoreList] = useState([]);
 
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentTime(new Date());
+
+
+
+
+    }, 1000);
+    return () => clearInterval(interval);
+  }, []);
+
+
+
+  useEffect(() => {
+    if (step === 3) {
+      const savedScores = JSON.parse(localStorage.getItem("quizScores")) || [];
+      setScoreList(savedScores);
+    }
+  }, [step]);
 
 
 
@@ -35,12 +57,7 @@ function App() {
     }
   }, [selectedTopic]);
 
-  useEffect(() => {
-    if (selectedTopic) {
-      const temp = quiz.find((obj) => obj.category === selectedTopic);
-      setQuestions(temp.questions);
-    }
-  }, [selectedTopic]);
+
 
   useEffect(() => {
     if (step === 2 && questions) {
@@ -49,7 +66,7 @@ function App() {
         setCountdown((prev) => {
           if (prev === 1) {
             clearInterval(timerRef.current);
-            handleNextQuestion(); 
+            handleNextQuestion();
           }
           return prev - 1;
         });
@@ -63,18 +80,18 @@ function App() {
 
   function handleCreateUser() {
     if (name.trim()) {
-      const existingScores = JSON.parse(localStorage.getItem("quizScores")) || [];
+      // const existingScores = JSON.parse(localStorage.getItem("quizScores")) || [];
 
-      const newEntry = {
-        id: Date.now(),
-        name: name,
-        score: 0,
-        category: 0,
-  
-    };
-    const updatedScores = [...existingScores, newEntry];
-        localStorage.setItem("quizScores", JSON.stringify(updatedScores));
-    
+      //   const newEntry = {
+      //     id: Date.now(),
+      //     name: name,
+      //     score: 0,
+      //     category: 0,
+
+      // };
+      // const updatedScores = [...existingScores, newEntry];
+      //     localStorage.setItem("quizScores", JSON.stringify(updatedScores));
+
       setCreatedUser(name);
       setMessage("User Created Successfully!");
       setMessageType("success");
@@ -108,10 +125,23 @@ function App() {
 
   function handleTopicSelect(topic) {
     setSelectedTopic(topic);
+    setMessage("Topic selected successfully!");
+    setMessageType("success");
+    setQuestionNumber(0);
+    setScore(0);
+
+    setTimeout(() => {
+      setMessage("");
+      setMessageType("");
+    }, 3000);
   }
   function beginQuiz() {
     if (selectedTopic) {
-      setStep(2);
+
+      setStep(2); 
+      setQuestionNumber(0);
+      setScore(0);
+
     } else {
       setMessage("Please select a topic first.");
       setMessageType("error");
@@ -123,22 +153,40 @@ function App() {
   }
 
   function handleNextQuestion() {
-  
+    clearInterval(timerRef.current);
+
     if (questionNumber < questions.length - 1) {
       setQuestionNumber((prev) => prev + 1);
 
     } else {
-      
+      const existingScores = JSON.parse(localStorage.getItem("quizScores")) || [];
+
+      const newEntry = {
+        id: Date.now(),
+        name: createdUser,
+        score: score,
+        totalQuestions: questions.length,
+        category: selectedTopic,
+        date: new Date().toLocaleDateString(),
+        time: new Date().toLocaleTimeString(),
+      };
+
+      localStorage.setItem("quizScores", JSON.stringify([...existingScores, newEntry]));
+
       setMessage("Quiz Completed!");
       setMessageType("success");
       // setStep(0); // Reset to the initial step
-      setStep(3); // Reset to the initial step
-
+      // setStep(3); // Reset to the initial step
+      setTimeout(() => {
+        setMessage("");
+        setMessageType("");
+        setStep(3);
+      }, 2000);
     }
   }
 
 
-  
+
 
 
   function handleAnswer(selectedAnswer) {
@@ -150,21 +198,11 @@ function App() {
     handleNextQuestion();
   }
 
-  function handleNextQuestion() {
-    clearInterval(timerRef.current); 
-  
-    if (questionNumber < questions.length - 1) {
-      setQuestionNumber((prev) => prev + 1);
-    } else {
-      setMessage("Quiz Completed!");
-      setMessageType("success");
-      setStep(3); 
-    }
-  }
-  
+
+
   return (
     <>
-  
+
       <div className="header">
         <div className="pop">
           <h1>Quiz</h1>
@@ -172,29 +210,62 @@ function App() {
 
         {step > 0 && (
           <div className="home_quix_score">
-            <h4>Home</h4>
-            <h4>Quiz</h4>
-            <h4>Score</h4>
+
+            <button onClick={() => {
+  setCreatedUser("");
+  setName("");
+  setStep(0);
+  setSelectedTopic("");
+  setQuestions(null);
+  setScore(0);
+  setQuestionNumber(0);
+}}>Home</button>
+
+            <button onClick={() => setStep(1)}>Quiz</button>
+            <button onClick={() => setStep(3)}>Score</button>
+
+
+
+
           </div>
         )}
 
+
         <div className="start">
           {!createdUser ? (
-            <button onClick={() => setShowSection("form")}>Create User</button>
+            <button onClick={() => {
+              setShowSection("form");
+              setName("");
+            }}>Create User</button>
           ) : (
-            <button onClick={() => setShowSection("form")}>
-              {createdUser}
-            </button>
+            <>
+              <button onClick={() => setShowSection("form")}>
+                {createdUser}
+              </button>
+              <button onClick={() => {
+                setCreatedUser("");
+                setName("");
+                setStep(0);
+                setSelectedTopic("");
+                setQuestions(null);
+                setScore(0);
+                setQuestionNumber(0);
+              }} style={{ marginLeft: "10px", backgroundColor: "red", color: "white" }}>
+                Logout
+              </button>
+            </>
           )}
         </div>
+
       </div>
 
       {step === 0 && (
         <div className="username">
           <div className="text">
-            <h1>
-              Take Your <span>Knowledge</span> to the Next Level
-            </h1>
+            <div id="Desiner_text"> <h1>
+              Take Your <span>Knowledge</span><br /> to the Next Level
+            </h1></div>
+           
             <div className="Start">
               <button onClick={startQuiz}>
                 Start Quiz <FaAnglesRight />
@@ -254,7 +325,7 @@ function App() {
         )}
 
         {step === 1 && (
-          
+
           <div className="topic-selection">
             <h1>Welcome, {createdUser}!</h1>
             <p className="choose-category">Select a Quiz Category:</p>
@@ -274,7 +345,7 @@ function App() {
             <button className="Start-btn" onClick={beginQuiz}>
               Start
             </button>
-            
+
           </div>
         )}
 
@@ -289,45 +360,76 @@ function App() {
                   {questions[questionNumber].options.map((option, index) => (
                     <p className="option" key={index} onClick={() => handleAnswer(option)}>
                       {option}
+                      {/* {option === questions[questionNumber].a && (
+                        <span className="correct-answer"> (Correct)</span>
+                      )}
+                      {option !== questions[questionNumber].a && (
+                        <span className="wrong-answer"> (Wrong)</span>
+                      )} */}
                     </p>
                   ))}
-                           <div className="next">
-  <button onClick={handleNextQuestion}>Next</button>
-</div>
+                  <div className="next">
+                    <button onClick={handleNextQuestion}>Next</button>
+                  </div>
                 </div>
                 <div className="countdown">
                   Time Remaining: {countdown} seconds
-                  
+
                 </div>
-                
+
               </>
-              
+
             )}
-    
+
           </div>
         )}
 
 
 
-{step === 3 && (
-  <div className="score-screen">
-    <h1>Quiz Completed!</h1>
-    <h2>Well done, {createdUser}!</h2>
-    <h2>Your Score: {score} </h2>
-    <h2> questions{questions.length}</h2>
-    <button onClick={() => {
-      setStep(0);
-      setScore(0);
-      setCreatedUser("");
-      setName("");
-      setQuestionNumber(0);
-      setSelectedTopic("");
-      setQuestions(null);
-      setCountdown(5);
-      setShowSection(null);
-    }}>Play Again</button>
-  </div>
-)}
+
+        {step === 3 && (
+          <div className="score-screen">
+            <h1>All Quiz Scores</h1>
+            <table border="1" cellPadding="10" style={{ margin: "20px auto", textAlign: "left" }}>
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Score</th>
+                  <th>Total Questions</th>
+                  <th>Category</th>
+                  <th>Date</th>
+                  <th>Time</th>
+                  <th>Current Time:</th>
+                </tr>
+              </thead>
+              <tbody>
+                {scoreList.map((entry) => (
+                  <tr key={entry.id}>
+                    <td>{entry.name}</td>
+                    <td>{entry.score}</td>
+                    <td>{entry.totalQuestions}</td>
+                    <td>{entry.category}</td>
+                    <td>{entry.date}</td>
+                    <td>{entry.time}</td>
+                    <td>{currentTime.toLocaleTimeString()}</td>
+
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+
+            <button onClick={() => {
+              setStep(0);
+              setScore(0);
+              setQuestionNumber(0);
+              setSelectedTopic("");
+              setQuestions(null);
+              setCountdown(5);
+              setShowSection(null);
+            }}>Play Again</button>
+          </div>
+        )}
+
 
       </div>
     </>
